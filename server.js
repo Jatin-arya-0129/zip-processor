@@ -13,7 +13,7 @@ const upload = multer({ dest: "uploads/" });
 
 let progress = 0;
 
-// Upload + Process
+// UPLOAD + PROCESS
 app.post("/upload", upload.array("files"), async (req, res) => {
   try {
     progress = 0;
@@ -31,40 +31,37 @@ app.post("/upload", upload.array("files"), async (req, res) => {
         }
       });
 
-      // progress update
       progress = Math.round(((i + 1) / files.length) * 100);
 
-      // delete temp file
-      fs.unlinkSync(files[i].path);
+      fs.unlinkSync(files[i].path); // temp delete
     }
 
     let outputPath = path.join(__dirname, "final.zip");
     outputZip.writeZip(outputPath);
 
-    res.json({ message: "Processing Done" });
+    res.json({ message: "Done" });
 
   } catch (err) {
     res.status(500).send(err.message);
   }
 });
 
-// Progress API
+// PROGRESS
 app.get("/progress", (req, res) => {
   res.json({ progress });
 });
 
-// Download API
+// DOWNLOAD
 app.get("/download", (req, res) => {
   let filePath = path.join(__dirname, "final.zip");
 
   if (fs.existsSync(filePath)) {
     res.download(filePath);
   } else {
-    res.status(404).send("File not found");
+    res.status(404).send("No file yet");
   }
 });
 
-// Start server
 app.listen(process.env.PORT || 3000, () => {
   console.log("Server running...");
 });
