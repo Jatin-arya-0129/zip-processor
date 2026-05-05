@@ -6,11 +6,78 @@
   <style>
     body {
       margin:0;
-      font-family: 'Segoe UI';
-      background: linear-gradient(135deg,#141e30,#243b55);
+      font-family:'Segoe UI';
+      background: radial-gradient(circle at top,#1f2a44,#0d1117);
       color:white;
+      overflow:hidden;
     }
 
+    /* LOGIN OVERLAY */
+    .login-overlay {
+      position:fixed;
+      width:100%;
+      height:100%;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      backdrop-filter: blur(20px);
+    }
+
+    .login-box {
+      width:320px;
+      padding:30px;
+      border-radius:20px;
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      text-align:center;
+      animation: fadeIn 0.6s ease;
+    }
+
+    .login-box h2 {
+      margin-bottom:20px;
+    }
+
+    .input-group {
+      position:relative;
+    }
+
+    .login-box input {
+      width:100%;
+      padding:12px;
+      border:none;
+      border-radius:10px;
+      outline:none;
+      font-size:14px;
+    }
+
+    .eye {
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      cursor:pointer;
+      color:black;
+      font-size:14px;
+    }
+
+    .login-box button {
+      margin-top:20px;
+      width:100%;
+      padding:12px;
+      border:none;
+      border-radius:10px;
+      background: linear-gradient(135deg,#00c6ff,#0072ff);
+      color:white;
+      cursor:pointer;
+      font-weight:bold;
+      transition:0.3s;
+    }
+
+    .login-box button:hover {
+      transform:translateY(-2px);
+    }
+
+    /* MAIN */
     .container {
       width:420px;
       margin:auto;
@@ -19,12 +86,9 @@
       border-radius:20px;
       background: rgba(255,255,255,0.08);
       backdrop-filter: blur(20px);
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
       text-align:center;
-    }
-
-    h2 {
-      margin-bottom:15px;
+      display:none;
+      animation: fadeIn 0.6s ease;
     }
 
     #dropArea {
@@ -32,10 +96,15 @@
       padding:25px;
       border-radius:12px;
       cursor:pointer;
+      transition:0.3s;
+    }
+
+    #dropArea:hover {
+      background: rgba(255,255,255,0.1);
     }
 
     button {
-      margin-top:10px;
+      margin-top:12px;
       padding:12px;
       width:100%;
       border:none;
@@ -44,124 +113,133 @@
       font-weight:bold;
     }
 
-    .upload { background: linear-gradient(135deg,#00c6ff,#0072ff); color:white; }
+    .upload { background: linear-gradient(135deg,#00c6ff,#0072ff); }
     .download { background: linear-gradient(135deg,#f7971e,#ffd200); }
 
     .bar {
       width:100%;
-      background: rgba(255,255,255,0.2);
+      background:rgba(255,255,255,0.2);
       border-radius:10px;
-      margin-top:12px;
+      margin-top:10px;
     }
 
     .progress {
       height:10px;
       width:0%;
-      background: lime;
+      background:linear-gradient(90deg,#00ffcc,#00c6ff);
     }
 
     .file-list {
       margin-top:10px;
+      text-align:left;
+      font-size:13px;
       max-height:80px;
       overflow:auto;
-      font-size:13px;
-      text-align:left;
-    }
-
-    .file-item {
-      display:flex;
-      justify-content:space-between;
-      margin-bottom:5px;
-      background: rgba(255,255,255,0.1);
-      padding:5px;
-      border-radius:6px;
     }
 
     .footer {
       position:fixed;
       bottom:10px;
-      right:15px;
+      right:10px;
       font-size:12px;
       color:#ffffff88;
+    }
+
+    @keyframes fadeIn {
+      from {opacity:0; transform:translateY(20px);}
+      to {opacity:1; transform:translateY(0);}
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
+<!-- LOGIN -->
+<div class="login-overlay" id="loginBox">
+  <div class="login-box">
+    <h2>🔐 Secure Access</h2>
+
+    <div class="input-group">
+      <input type="password" id="password" placeholder="Enter Password">
+      <span class="eye" onclick="togglePass()">👁</span>
+    </div>
+
+    <button onclick="login()">Login</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="container" id="app">
   <h2>🚀 ZIP Processor</h2>
 
   <div id="dropArea">
-    📂 Drag & Drop ZIP Files<br><br>
-    <small>or Click to Select</small>
+    Drag & Drop ZIP Files<br><br>
+    <small>Click to Select</small>
     <input type="file" id="files" multiple style="display:none;" onchange="handleFiles(this.files)">
   </div>
 
   <div class="file-list" id="fileList"></div>
 
-  <button class="upload" onclick="upload()">⬆ Upload & Process</button>
+  <button class="upload" onclick="upload()">Upload & Process</button>
 
   <div class="bar">
     <div class="progress" id="bar"></div>
   </div>
 
-  <button class="download" onclick="download()">📥 Download ZIP</button>
+  <button class="download" onclick="download()">Download ZIP</button>
 </div>
 
 <div class="footer">@Innovatiview India Ltd.</div>
 
 <script>
 let selectedFiles = [];
+
+// PASSWORD TOGGLE
+function togglePass() {
+  let input = document.getElementById("password");
+  input.type = input.type === "password" ? "text" : "password";
+}
+
+// LOGIN
+function login() {
+  if (document.getElementById("password").value === "admin123") {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("app").style.display = "block";
+  } else {
+    alert("Wrong Password");
+  }
+}
+
+// FILE HANDLING
 let dropArea = document.getElementById("dropArea");
 
 dropArea.onclick = () => document.getElementById("files").click();
 
-dropArea.addEventListener("dragover", e => {
-  e.preventDefault();
-});
+dropArea.addEventListener("dragover", e => e.preventDefault());
 
 dropArea.addEventListener("drop", e => {
   e.preventDefault();
   handleFiles(e.dataTransfer.files);
 });
 
-// HANDLE FILES
 function handleFiles(files) {
   selectedFiles = Array.from(files);
 
-  let html = "";
-  selectedFiles.forEach((f, i) => {
-    html += `<div class="file-item">
-      ${f.name}
-      <span onclick="removeFile(${i})">❌</span>
-    </div>`;
-  });
-
+  let html = selectedFiles.map(f => f.name).join("<br>");
   document.getElementById("fileList").innerHTML = html;
-}
-
-// REMOVE FILE
-function removeFile(index) {
-  selectedFiles.splice(index, 1);
-  handleFiles(selectedFiles);
 }
 
 // UPLOAD
 async function upload() {
   if (selectedFiles.length === 0) {
-    alert("No files selected");
+    alert("Select files first");
     return;
   }
 
   let formData = new FormData();
   selectedFiles.forEach(f => formData.append("files", f));
 
-  fetch("/upload", {
-    method: "POST",
-    body: formData
-  });
-
+  await fetch("/upload", { method: "POST", body: formData });
   track();
 }
 
