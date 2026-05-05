@@ -1,8 +1,8 @@
 const express = require("express");
 const multer = require("multer");
-const fs = require("fs");
 const AdmZip = require("adm-zip");
 const path = require("path");
+const fs = require("fs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,45 +11,58 @@ const upload = multer({ dest: "uploads/" });
 
 let progress = 0;
 
-// STATIC
-app.use(express.static("public"));
+// STATIC FILES SERVE
+app.use(express.static(path.join(__dirname, "public")));
 
-// FIX FOR ROOT
+// FORCE ROOT FIX (IMPORTANT)
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// UPLOAD
+// UPLOAD API
 app.post("/upload", upload.array("files"), (req, res) => {
-  progress = 0;
+  try {
+    progress = 0;
 
-  const outputZip = new AdmZip();
+    const outputZip = new AdmZip();
 
-  req.files.forEach((file, index) => {
-    const zip = new AdmZip(file.path);
+    req.files.forEach((file, index) => {
+      const zip = new AdmZip(file.path);
 
-    zip.getEntries().forEach(entry => {
-      if (!entry.isDirectory) {
-        outputZip.addFile(entry.entryName, entry.getData());
-      }
+      zip.getEntries().forEach(entry => {
+        if (!entry.isDirectory) {
+          outputZip.addFile(entry.entryName, entry.getData());
+        }
+      });
+
+      progress = Math.floor(((index + 1) / req.files.length) * 100);
+
+      fs.unlinkSync(file.path); // cleanup
     });
 
-    progress = Math.floor(((index + 1) / req.files.length) * 100);
-  });
+    outputZip.writeZip(path.join(__dirname, "final.zip"));
 
-  outputZip.writeZip("final.zip");
+    res.json({ message: "Done" });
 
-  res.send("Done");
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 });
 
-// PROGRESS
+// PROGRESS API
 app.get("/progress", (req, res) => {
   res.json({ progress });
 });
 
-// DOWNLOAD
+// DOWNLOAD API
 app.get("/download", (req, res) => {
-  res.download("final.zip");
+  const file = path.join(__dirname, "final.zip");
+
+  if (fs.existsSync(file)) {
+    res.download(file);
+  } else {
+    res.status(404).send("File not ready");
+  }
 });
 
-app.listen(PORT, () => console.log("Server running"));
+app.listen(PORT, () => console.log("Server running on port", PORT));
