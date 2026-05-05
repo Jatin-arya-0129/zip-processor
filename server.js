@@ -1,3 +1,4 @@
+app.use(express.static(__dirname));
 const express = require("express");
 const multer = require("multer");
 const AdmZip = require("adm-zip");
