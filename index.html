@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ZIP Processor</title>
+</head>
+<body>
+
+<h2>ZIP Processor</h2>
+
+<input type="file" id="files" multiple>
+<button onclick="upload()">Upload & Process</button>
+
+<div style="width:300px;background:#ccc;margin-top:10px;">
+  <div id="bar" style="height:10px;width:0;background:green;"></div>
+</div>
+
+<br>
+<button onclick="download()">Download ZIP</button>
+
+<script>
+async function upload() {
+  let files = document.getElementById("files").files;
+  let formData = new FormData();
+
+  for (let f of files) formData.append("files", f);
+
+  fetch("http://localhost:3000/upload", {
+    method: "POST",
+    body: formData
+  });
+
+  trackProgress();
+}
+
+function trackProgress() {
+  let interval = setInterval(async () => {
+    let res = await fetch("http://localhost:3000/progress");
+    let data = await res.json();
+
+    document.getElementById("bar").style.width = data.progress + "%";
+
+    if (data.progress >= 100) clearInterval(interval);
+  }, 500);
+}
+
+function download() {
+  window.open("http://localhost:3000/download");
+}
+</script>
+
+</body>
+</html>
