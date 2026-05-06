@@ -1,7 +1,6 @@
 const express = require("express");
 const multer = require("multer");
 const AdmZip = require("adm-zip");
-const path = require("path");
 const fs = require("fs");
 
 const app = express();
@@ -11,12 +10,54 @@ const upload = multer({ dest: "uploads/" });
 
 let progress = 0;
 
-// STATIC FILES (VERY IMPORTANT)
-app.use(express.static(path.join(__dirname, "public")));
-
-// ROOT FIX
+// ✅ DIRECT HTML RESPONSE (NO FILE NEEDED)
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.send(`
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>ZIP Processor</title>
+  </head>
+  <body style="margin:0;background:#1f3c72;color:white;text-align:center;font-family:Segoe UI;">
+    
+    <h2 style="margin-top:100px;">🚀 ZIP Processor</h2>
+
+    <input type="file" id="files" multiple><br><br>
+
+    <button onclick="upload()">Upload</button>
+    <button onclick="download()">Download</button>
+
+    <div style="position:fixed;bottom:10px;right:10px;color:#ccc;">
+      @Innovatiview India Ltd.
+    </div>
+
+    <script>
+      let selectedFiles = [];
+
+      document.getElementById("files").addEventListener("change", function(e){
+        selectedFiles = Array.from(e.target.files);
+      });
+
+      function upload() {
+        let formData = new FormData();
+        selectedFiles.forEach(f => formData.append("files", f));
+
+        fetch("/upload", {
+          method: "POST",
+          body: formData
+        });
+
+        alert("Processing...");
+      }
+
+      function download() {
+        window.open("/download");
+      }
+    </script>
+
+  </body>
+  </html>
+  `);
 });
 
 // UPLOAD
@@ -39,26 +80,19 @@ app.post("/upload", upload.array("files"), (req, res) => {
     });
 
     outputZip.writeZip("final.zip");
+    res.send("Done");
 
-    res.json({ message: "Done" });
   } catch (err) {
     res.status(500).send(err.message);
   }
 });
 
-// PROGRESS
-app.get("/progress", (req, res) => {
-  res.json({ progress });
-});
-
 // DOWNLOAD
 app.get("/download", (req, res) => {
-  const file = path.join(__dirname, "final.zip");
-
-  if (fs.existsSync(file)) {
-    res.download(file);
+  if (fs.existsSync("final.zip")) {
+    res.download("final.zip");
   } else {
-    res.status(404).send("File not ready");
+    res.send("File not ready");
   }
 });
 
