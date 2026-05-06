@@ -11,15 +11,15 @@ const upload = multer({ dest: "uploads/" });
 
 let progress = 0;
 
-// ✅ STATIC FILES
-app.use(express.static(path.resolve(__dirname, "public")));
+// STATIC FILES (VERY IMPORTANT)
+app.use(express.static(path.join(__dirname, "public")));
 
-// ✅ FORCE ROOT (MOST IMPORTANT FIX)
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "public", "index.html"));
+// ROOT FIX
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// ✅ UPLOAD
+// UPLOAD
 app.post("/upload", upload.array("files"), (req, res) => {
   try {
     progress = 0;
@@ -39,8 +39,8 @@ app.post("/upload", upload.array("files"), (req, res) => {
     });
 
     outputZip.writeZip("final.zip");
-    res.json({ message: "Done" });
 
+    res.json({ message: "Done" });
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -62,4 +62,4 @@ app.get("/download", (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log("Server running on", PORT));
+app.listen(PORT, () => console.log("Server running"));
