@@ -2,11 +2,10 @@
 <html>
 <head>
   <title>ZIP Processor</title>
-
   <style>
     body {
       margin:0;
-      font-family:'Segoe UI';
+      font-family:Segoe UI;
       background: linear-gradient(135deg,#1f3c72,#2a5298);
       color:white;
     }
@@ -18,43 +17,27 @@
       display:flex;
       justify-content:center;
       align-items:center;
-      backdrop-filter: blur(10px);
     }
 
     .login-box {
-      width:320px;
-      padding:30px;
-      border-radius:20px;
       background: rgba(0,0,0,0.6);
+      padding:30px;
+      border-radius:15px;
       text-align:center;
     }
 
     .login-box input {
       width:100%;
-      padding:12px;
-      border-radius:10px;
+      padding:10px;
       border:none;
-      background:white;
-      color:black;
-    }
-
-    .login-box button {
-      margin-top:15px;
-      width:100%;
-      padding:12px;
-      border:none;
-      border-radius:10px;
-      background:#0072ff;
-      color:white;
-      cursor:pointer;
+      border-radius:8px;
+      margin-top:10px;
     }
 
     .container {
       display:none;
-      width:400px;
-      margin:auto;
-      margin-top:80px;
       text-align:center;
+      margin-top:80px;
     }
 
     #dropArea {
@@ -114,11 +97,6 @@ document.getElementById("files").addEventListener("change", function(e){
 });
 
 function upload() {
-  if (selectedFiles.length === 0) {
-    alert("Select files first");
-    return;
-  }
-
   let formData = new FormData();
   selectedFiles.forEach(f => formData.append("files", f));
 
@@ -127,7 +105,7 @@ function upload() {
     body: formData
   });
 
-  alert("Processing started...");
+  alert("Processing...");
 }
 
 function download() {
